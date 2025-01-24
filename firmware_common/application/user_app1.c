@@ -53,7 +53,8 @@ extern volatile u32 G_u32SystemTime1ms;                   /*!< @brief From main.
 extern volatile u32 G_u32SystemTime1s;                    /*!< @brief From main.c */
 extern volatile u32 G_u32SystemFlags;                     /*!< @brief From main.c */
 extern volatile u32 G_u32ApplicationFlags;                /*!< @brief From main.c */
-
+extern u8 G_au8DebugScanfBuffer[DEBUG_SCANF_BUFFER_SIZE]; // From debug.c
+extern u8 G_u8DebugScanfCharCount;                        // From debug.c
 
 /***********************************************************************************************************************
 Global variable definitions with scope limited to this local application.
@@ -93,6 +94,13 @@ Promises:
 void UserApp1Initialize(void)
 {
   /* If good initialization, set state to Idle */
+  for (u8 i = 0; i < U8_TOTAL_LEDS;i++)
+  {
+    LedOff((LedNameType)i);
+  }
+  
+
+
   if( 1 )
   {
     UserApp1_pfStateMachine = UserApp1SM_Idle;
@@ -140,7 +148,104 @@ State Machine Function Definitions
 /* What does this state do? */
 static void UserApp1SM_Idle(void)
 {
-     
+  static bRed1Blink = FALSE;
+  static LedRateType aeBlinkRate[] = {LED_1HZ,LED_2HZ,LED_4HZ,LED_8HZ};
+  static u8 u8BlinkRateIndex = 0;
+
+
+
+
+  if (IsButtonHeld(BUTTON0,2000))
+  {
+    LedOn(LCD_BL);
+  }
+  else
+  {
+    LedOff(LCD_BL);
+  }
+  
+
+  if( WasButtonPressed(BUTTON0) && bRed1Blink)
+  {
+      ButtonAcknowledge(BUTTON0);
+      u8BlinkRateIndex++;
+      if (u8BlinkRateIndex == (sizeof(aeBlinkRate)/sizeof(LedRateType)))
+      {
+        u8BlinkRateIndex = 0;
+      }
+      
+    LedBlink(RED1,aeBlinkRate[u8BlinkRateIndex]);
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if( WasButtonPressed(BUTTON1))
+    {
+      ButtonAcknowledge(BUTTON1);
+
+
+      if (!bRed1Blink)
+      {
+        bRed1Blink = TRUE;
+        LedBlink(RED1,aeBlinkRate[u8BlinkRateIndex]);
+
+
+
+        ButtonAcknowledge(BUTTON0);
+      }
+      else
+      {
+        bRed1Blink = FALSE;
+        LedOff(RED1);
+      }
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+  if( IsButtonPressed(BUTTON0))
+    {
+      LedOn(BLUE0);
+    }
+  else
+    {
+      LedOff(BLUE0);
+    }
+
+
+
+
+
 } /* end UserApp1SM_Idle() */
      
 
